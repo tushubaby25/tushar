@@ -1,0 +1,80 @@
+<script>
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTawyAss2Jom8pcSXVAIvCGzS4HKbLQ3FZ_5OCVj1NZCuSLE6UxzehlOYIug8rq2RhJ3zzBD8jRJKyi/pub?output=csv";
+
+function showLogin(){
+document.getElementById('adminLogin').style.display='block';
+}
+
+function login(){
+const u=document.getElementById('user').value;
+const p=document.getElementById('pass').value;
+
+if(u==='TushuAdmin' && p==='Tushu@2026'){
+alert('Login Successful');
+document.getElementById('adminPanel').style.display='block';
+document.getElementById('adminLogin').style.display='none';
+}else{
+alert('Wrong username or password');
+}
+}
+
+async function loadNews() {
+const container = document.getElementById('newsContainer');
+container.innerHTML = "<p>Loading News...</p>";
+
+try {
+const response = await fetch(SHEET_URL);
+const csv = await response.text();
+
+const rows = csv.split('\n').slice(1);
+container.innerHTML = '';
+
+rows.reverse().forEach(row => {
+const cols = row.split(',');
+
+if(cols.length < 5) return;
+
+const title = cols[0]?.trim() || '';
+const category = cols[1]?.trim() || '';
+const desc = cols[2]?.trim() || '';
+const image = cols[3]?.trim() || '';
+const date = cols[4]?.trim() || '';
+
+const div = document.createElement('div');
+div.className = 'card';
+
+div.innerHTML = `
+<h3>${title}</h3>
+<p><b>Category:</b> ${category}</p>
+${image ? `<img src="${image}" alt="News Image">` : ''}
+<p>${desc}</p>
+<small>${date}</small>
+`;
+
+container.appendChild(div);
+});
+
+if(container.innerHTML === ''){
+container.innerHTML = "<p>No news available.</p>";
+}
+
+} catch (error) {
+container.innerHTML = "<p>Failed to load news.</p>";
+console.error(error);
+}
+}
+
+function searchNews(){
+let input=document.getElementById('search').value.toLowerCase();
+
+document.querySelectorAll('.card').forEach(card=>{
+card.style.display =
+card.innerText.toLowerCase().includes(input)
+? 'block'
+: 'none';
+});
+}
+
+loadNews();
+setInterval(loadNews, 30000);
+</script>
